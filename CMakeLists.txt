@@ -18,13 +18,29 @@ find_package(Lua 5.4 REQUIRED)
 find_package(Immer)
 
 
-set(SOURCES
-	src/hi.cc
-	src/hi.hh
-	src/terminal.cc
-	src/terminal.hh
-	src/ncurses.hh
+set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+	"${SRC_DIR}/*.cc"
+	"${SRC_DIR}/*.hh"
 )
+
+file(GLOB_RECURSE SOURCE_FILES
+	${SRC_DIR}/*.cc
+	${SRC_DIR}/*.hh
+)
+
+list(REMOVE_ITEM SOURCE_FILES ${SRC_DIR}/main.cc)
+#list(REMOVE_ITEM SOURCE_FILES "${SRC_DIR}/buffer.cc")
+#list(REMOVE_ITEM SOURCE_FILES "${SRC_DIR}/buffer.hh")
+
+#set(SOURCE_FILES
+#	src/hi.cc
+#	src/hi.hh
+#	src/terminal.cc
+#	src/terminal.hh
+#	src/ncurses.hh
+#)
 
 set(INCLUDE_DIRS
 	${LUA_INCLUDE_DIR}
@@ -39,12 +55,13 @@ set(_LINK_LIBRARIES
 	${CURSES_LIBRARIES}
 )
 
-add_library(nero_lib ${SOURCES})
-target_include_directories(nero_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${INCLUDE_DIRS})
+add_library(nero_lib ${SOURCE_FILES})
+target_include_directories(nero_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${SRC_DIR} ${INCLUDE_DIRS})
 target_include_directories(nero_lib PUBLIC SYSTEM ${SYSTEM_INCLUDE_DIRS})
 target_link_libraries(nero_lib ${_LINK_LIBRARIES})
 
-add_executable(nero src/main.cc)
+add_executable(nero ${SRC_DIR}/main.cc)
+#add_executable(nero src/main.cc)
 target_link_libraries(nero PRIVATE nero_lib)
 
 include(CTest)
