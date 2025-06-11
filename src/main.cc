@@ -68,12 +68,21 @@ std::optional<action> intent(char event) {
 }
 
 // draw
-void draw(model curr) {
-  Terminal::clear();
-  auto s = std::to_string(curr.value);
-  Terminal::move(0, 0);
-  Terminal::add(s);
+struct ui_description{std::string s;};
+
+ui_description view(model curr) {
+  return {std::to_string(curr.value)};
+}
+
+void render(ui_description view){
+  Terminal::clear(); 
+  Terminal::move(0,0);
+  Terminal::add(view.s);
   Terminal::refresh();
+}
+
+void draw(model curr) {
+  render(view(curr));
 }
 
 int run() {
