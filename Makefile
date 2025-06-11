@@ -1,13 +1,13 @@
 SHELL := /usr/bin/bash
 
-#CXX=g++
-#CC=cc
-CXX=clang++
-CC=clang
+CXX=g++
+CC=cc
+#CXX=clang++
+#CC=clang
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY: build start init run test clean destroy reset targets nix
+.PHONY: build start init run test clean destroy reset targets nix valgrind
 
 build:
 	cmake --build build
@@ -19,8 +19,9 @@ start init:
 	fi
 	mkdir -p build
 
+ARGS ?= src/main.cc
 run:
-	@build/nero
+	@build/nero $(ARGS)
 
 test:
 	ctest --test-dir build --output-on-failure
@@ -40,3 +41,5 @@ targets:
 nix:
 	nix-shell
 
+valgrind:
+	@valgrind --leak-check=yes build/nero src/main.cc

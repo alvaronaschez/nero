@@ -12,7 +12,7 @@ using text = immer::flex_vector<line>;
 
 struct buffer {
   std::string file_name{""};
-  text text{};
+  nero::text text;
 };
 
 buffer buffer_from_file(std::string file_name);

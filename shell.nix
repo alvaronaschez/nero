@@ -15,7 +15,7 @@
       glibcLocales
 
       gdb
-      #valgrind
+      valgrind
 
       ncurses
       catch2_3

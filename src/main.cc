@@ -1,7 +1,8 @@
 #include "hi.hh"
 #include "terminal.hh"
 
-#include <optional>
+
+#include <iostream>
 #include <string>
 #include <variant>
 
@@ -37,7 +38,7 @@ using app_action =
 
 // key actions
 struct key_action {
-  char c;
+  wint_t c;
 };
 
 model update(model, app_action);
@@ -49,9 +50,11 @@ key_result update(model m, key_action e) {
   app_action new_action;
   switch (e.c) {
   case '+':
+  case 0403: // key up
     new_action = increment_action{};
     break;
   case '-':
+  case 0402: // key down
     new_action = decrement_action{};
     break;
   case '.':
@@ -84,18 +87,20 @@ model update(model c, app_action action) {
 }
 
 // intent
-std::optional<app_action> intent(char event) {
-  switch (event) {
-  case '+':
-    return increment_action{};
-  case '-':
-    return decrement_action{};
-  case '.':
-    return reset_action{};
-  default:
-    return std::nullopt;
-  }
-}
+//std::optional<app_action> intent(wint_t event) {
+//  switch (event) {
+//  case '+':
+//  case 0403: // key up
+//    return increment_action{};
+//  case '-':
+//  case 0402: // key down
+//    return decrement_action{};
+//  case '.':
+//    return reset_action{};
+//  default:
+//    return std::nullopt;
+//  }
+//}
 
 // draw
 struct ui_description {
@@ -113,21 +118,27 @@ void render(ui_description view) {
 
 void draw(model curr) { render(view(curr)); }
 
-int run() {
-  auto store =
-      lager::make_store<app_action>(model{}, lager::with_manual_event_loop{});
+int run(std::vector<std::string> argv) {
+  if (argv.size() != 2) {
+    std::cout << "Incorrect number of arguments" << std::endl;
+    return 1;
+  }
+  std::string file_name = argv[1];
+  std::cout << file_name << std::endl;
+
+  auto store = lager::make_store<key_action>(model{}, lager::with_manual_event_loop{});
   watch(store, draw);
 
   Terminal terminal{};
 
-  auto event = char{};
-  store.dispatch(reset_action{7});
+  wint_t event;
+  //store.dispatch(reset_action{7});
+  store.dispatch(key_action{'.'});
   while (true) {
-    event = terminal.get_char();
+    event = Terminal::get_char();
     if (event == 'q')
       break;
-    if (auto act = intent(event))
-      store.dispatch(*act);
+    store.dispatch(key_action{event});
   }
 
   return 0;
@@ -135,4 +146,7 @@ int run() {
 
 } // namespace nero
 
-int main() { return nero::run(); }
+int main(int argc, char *argv[]) {
+  std::vector<std::string> args{argv, argv + argc};
+  return nero::run(args);
+}

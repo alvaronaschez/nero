@@ -1,0 +1,13 @@
+# Suppress ncurses leaks (possible and reachable)
+{
+   suppress-ncurses
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:*initscr*
+}
+{
+   suppress-ncurses-2
+   Memcheck:Leak
+   match-leak-kinds: possible,reachable
+   fun:*ncurses*
+}
