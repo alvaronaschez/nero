@@ -31,8 +31,6 @@ file(GLOB_RECURSE SOURCE_FILES
 )
 
 list(REMOVE_ITEM SOURCE_FILES ${SRC_DIR}/main.cc)
-#list(REMOVE_ITEM SOURCE_FILES "${SRC_DIR}/buffer.cc")
-#list(REMOVE_ITEM SOURCE_FILES "${SRC_DIR}/buffer.hh")
 
 #set(SOURCE_FILES
 #	src/hi.cc
@@ -40,6 +38,8 @@ list(REMOVE_ITEM SOURCE_FILES ${SRC_DIR}/main.cc)
 #	src/terminal.cc
 #	src/terminal.hh
 #	src/ncurses.hh
+# src/buffer.cc
+# src/buffer.hh
 #)
 
 set(INCLUDE_DIRS
