@@ -1,7 +1,6 @@
 #include "hi.hh"
 #include "terminal.hh"
 
-#include <iostream>
 #include <optional>
 #include <string>
 #include <variant>
@@ -27,15 +26,46 @@ struct model {
 };
 
 // actions
+// app actions
 struct increment_action {};
 struct decrement_action {};
 struct reset_action {
   int new_value = 0;
 };
-using action = std::variant<increment_action, decrement_action, reset_action>;
+using app_action =
+    std::variant<increment_action, decrement_action, reset_action>;
+
+// key actions
+struct key_action {
+  char c;
+};
+
+model update(model, app_action);
+// using key_result = std::pair<model, lager::effect<app_action>>;
+using key_result = model;
+
+// key_reducer
+key_result update(model m, key_action e) {
+  app_action new_action;
+  switch (e.c) {
+  case '+':
+    new_action = increment_action{};
+    break;
+  case '-':
+    new_action = decrement_action{};
+    break;
+  case '.':
+    new_action = reset_action{};
+    break;
+  default:
+    return m;
+  };
+
+  return update(m, new_action);
+}
 
 // reducer
-model update(model c, action action) {
+model update(model c, app_action action) {
   return std::visit(lager::visitor{
                         [&](increment_action) {
                           ++c.value;
@@ -54,7 +84,7 @@ model update(model c, action action) {
 }
 
 // intent
-std::optional<action> intent(char event) {
+std::optional<app_action> intent(char event) {
   switch (event) {
   case '+':
     return increment_action{};
@@ -68,45 +98,24 @@ std::optional<action> intent(char event) {
 }
 
 // draw
-struct ui_description{std::string s;};
+struct ui_description {
+  std::string s;
+};
 
-ui_description view(model curr) {
-  return {std::to_string(curr.value)};
-}
+ui_description view(model curr) { return {std::to_string(curr.value)}; }
 
-void render(ui_description view){
-  Terminal::clear(); 
-  Terminal::move(0,0);
+void render(ui_description view) {
+  Terminal::clear();
+  Terminal::move(0, 0);
   Terminal::add(view.s);
   Terminal::refresh();
 }
 
-void draw(model curr) {
-  render(view(curr));
-}
+void draw(model curr) { render(view(curr)); }
 
 int run() {
-
-  // this project
-  say_hi();
-
-  // immer
-  const auto v0 = immer::vector<int>{};
-  const auto v1 = v0.push_back(13);
-  assert(v0.size() == 0 && v1.size() == 1 && v1[0] == 13);
-
-  const auto v2 = v1.set(0, 42);
-  assert(v1[0] == 13 && v2[0] == 42);
-
-  // lua
-  lua_State *L = luaL_newstate();
-  double v = lua_version(L);
-  std::cout << "lua version: " << v << std::endl;
-  lua_close(L);
-
-  // lager + ncurses
   auto store =
-      lager::make_store<action>(model{}, lager::with_manual_event_loop{});
+      lager::make_store<app_action>(model{}, lager::with_manual_event_loop{});
   watch(store, draw);
 
   Terminal terminal{};
