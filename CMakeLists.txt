@@ -7,7 +7,9 @@ project(nero VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g") # debug info, no optimizations
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0") # debug info, no optimizations
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak,address,undefined")
 set(CMAKE_CXX_EXTENSIONS off)
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
@@ -18,19 +20,19 @@ find_package(Lua 5.4 REQUIRED)
 find_package(Immer)
 
 
-set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-	"${SRC_DIR}/*.cc"
-	"${SRC_DIR}/*.hh"
-)
+set(CMAKE_CONFIGURE_DEPENDS TRUE)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 file(GLOB_RECURSE SOURCE_FILES
-	${SRC_DIR}/*.cc
-	${SRC_DIR}/*.hh
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hh"
 )
 
-list(REMOVE_ITEM SOURCE_FILES ${SRC_DIR}/main.cc)
+list(REMOVE_ITEM SOURCE_FILES 
+  ${SRC_DIR}/main.cc
+  ${SRC_DIR}/util.cc
+)
 
 #set(SOURCE_FILES
 #	src/hi.cc

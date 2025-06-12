@@ -10,13 +10,15 @@ Terminal::Terminal() {
   ncurses ::noecho();
   ncurses ::intrflush(ncurses::stdscr, FALSE);
   ncurses ::keypad(ncurses::stdscr, TRUE);
-
-  ncurses::curs_set(0); // hide cursor
 }
 
 Terminal::~Terminal() {
   ncurses::clear();
   ncurses::endwin();
+}
+
+void Terminal::hide_cursor(){
+  ncurses::curs_set(0);
 }
 
 void Terminal::move(int y, int x) { ncurses::move(y, x); }
@@ -45,4 +47,12 @@ wint_t Terminal::get_char() {
   return c;
   //return ncurses::wgetch(ncurses::stdscr); 
 }
+
+point Terminal::size(){
+  point p;
+  p.x = getmaxx(ncurses::stdscr);
+  p.y = getmaxy(ncurses::stdscr);
+  return p;
+}
+
 } // namespace nero
