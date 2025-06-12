@@ -2,14 +2,10 @@
 
 #include <string>
 
-#include <immer/flex_vector.hpp>
+#include "common.hh"
 // #include <utf8cpp/utf8.h>
 
 namespace nero {
-
-using line = immer::flex_vector<wchar_t>;
-using text = immer::flex_vector<line>;
-
 struct buffer {
   std::string file_name{""};
   nero::text text;
