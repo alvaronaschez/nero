@@ -6,7 +6,8 @@
 namespace nero {
 Terminal::Terminal() {
   ncurses::initscr();
-  ncurses ::cbreak();
+  //ncurses ::cbreak();
+  ncurses::raw();
   ncurses ::noecho();
   ncurses ::intrflush(ncurses::stdscr, FALSE);
   ncurses ::keypad(ncurses::stdscr, TRUE);
@@ -48,8 +49,8 @@ wint_t Terminal::get_char() {
   //return ncurses::wgetch(ncurses::stdscr); 
 }
 
-point Terminal::size(){
-  point p;
+Point Terminal::size(){
+  Point p;
   p.x = getmaxx(ncurses::stdscr);
   p.y = getmaxy(ncurses::stdscr);
   return p;

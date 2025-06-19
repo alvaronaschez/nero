@@ -4,11 +4,14 @@
 #include "terminal.hh"
 #include "util.hh"
 #include <immer/flex_vector_transient.hpp>
+#include <immer/map.hpp>
+#include <string>
+#include <variant>
 
 namespace nero {
-editor_view view(editor ed) {
-  text txt = ed.buf.text.drop(ed.off.y).take(ed.scr_size.y);
-  immer::flex_vector_transient<line> result{};
+EditorView view(Editor ed) {
+  Text txt = ed.buf.text.drop(ed.off.y).take(ed.scr_size.y);
+  immer::flex_vector_transient<Line> result{};
   for (auto row : txt) {
     result.push_back(row.drop(ed.off.x).take(ed.scr_size.x));
   }
@@ -16,7 +19,7 @@ editor_view view(editor ed) {
           .cursor = {ed.cur.y - ed.off.y, ed.cur.x - ed.off.x}};
 }
 
-void render(editor_view view) {
+void render(EditorView view) {
   Terminal::clear();
   Terminal::move(0, 0);
 
@@ -31,11 +34,16 @@ void render(editor_view view) {
   Terminal::refresh();
 }
 
-void draw(editor ed) { render(view(ed)); }
+void draw(Editor ed) { render(view(ed)); }
 
 // commands
 
-editor adjust_offset(editor ed) {
+Editor to_mode(Editor ed, Mode m) {
+  ed.mode = m;
+  return ed;
+}
+
+Editor adjust_offset(Editor ed) {
   auto &off = ed.off;
   auto &cur = ed.cur;
 
@@ -51,7 +59,7 @@ editor adjust_offset(editor ed) {
   return ed;
 }
 
-editor cursor_move(editor ed, int dy, int dx) {
+Editor cursor_move(Editor ed, int dy, int dx) {
   auto max_y = ed.buf.text.size();
   if (max_y > 0)
     max_y -= 1;
@@ -71,14 +79,22 @@ editor cursor_move(editor ed, int dy, int dx) {
   return adjust_offset(ed);
 }
 
-editor resize(editor ed) {
+Editor resize(Editor ed) {
   ed.scr_size = Terminal::size();
   return adjust_offset(ed);
 }
 
+struct args {};
+// using editor_command = std::function<editor(editor, args)>;
+// using key_map = immer::map<wchar_t, editor_command>;
+using key_map = immer::map<std::wstring, std::wstring>;
+
+key_map normal_kmap{};
+key_map insert_kmap{};
+
 int run() {
   Terminal t{};
-  editor ed{};
+  Editor ed{};
   ed.scr_size = Terminal::size();
   ed.buf = buffer_from_file("src/editor.cc");
   while (true) {
@@ -100,6 +116,9 @@ int run() {
     case 'l':
       ed = cursor_move(ed, 0, 1);
       break;
+    case ':':
+      ed = to_mode(ed, Mode::INSERT);
+      break;
     case 0632:
       ed = resize(ed);
       break;
@@ -107,4 +126,14 @@ int run() {
   }
   return 0;
 }
+
+using Args = std::variant<std::monostate, int>;
+
+struct Command {
+  std::function<Editor(Editor, Args)> f;
+  Args args;
+};
+
+
+
 } // namespace nero

@@ -7,28 +7,34 @@
 
 namespace nero {
 
-struct editor {
-  point cur{};
-  point off{};
-  point scr_size{};
+enum Mode {
+  NORMAL,
+  INSERT,
+};
+
+struct Editor {
+  Mode mode{Mode::NORMAL};
+  Point cur{};
+  Point off{};
+  Point scr_size{};
   nero::buffer buf{};
 };
 
 // using line = immer::flex_vector<wchar_t>;
 // using text = immer::flex_vector<line>;
-struct editor_view {
-  nero::text text; // from buffer.hh, put it in a separate file with point
-  point cursor;
+struct EditorView {
+  nero::Text text; // from buffer.hh, put it in a separate file with point
+  Point cursor;
 };
 
-void render(editor_view);
-editor_view view(editor);
-void draw(editor, editor);
+void render(EditorView);
+EditorView view(Editor);
+void draw(Editor, Editor);
 
-void load_file(editor, std::string file_name);
+void load_file(Editor, std::string file_name);
 
-editor cursor_move(editor, int dy, int dx);
-editor resize(editor);
+Editor cursor_move(Editor, int dy, int dx);
+Editor resize(Editor);
 
 int run();
 } // namespace nero

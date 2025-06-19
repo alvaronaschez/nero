@@ -8,7 +8,7 @@
 namespace nero {
 struct buffer {
   std::string file_name{""};
-  nero::text text;
+  nero::Text text;
 };
 
 buffer buffer_from_file(std::string file_name);

@@ -18,7 +18,7 @@ public:
   static void add(wint_t);
   static void refresh();
   static void clear();
-  static point size();
+  static Point size();
   
 };
 
