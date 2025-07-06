@@ -2,13 +2,16 @@
 #include "buffer.hh"
 #include "common.hh"
 #include "terminal.hh"
-#include "util.hh"
+#include "commands.hh"
+#include "keys.hh"
+
 #include <immer/flex_vector_transient.hpp>
 #include <immer/map.hpp>
 #include <string>
 #include <variant>
 
 namespace nero {
+
 EditorView view(Editor ed) {
   Text txt = ed.buf.text.drop(ed.off.y).take(ed.scr_size.y);
   immer::flex_vector_transient<Line> result{};
@@ -36,104 +39,52 @@ void render(EditorView view) {
 
 void draw(Editor ed) { render(view(ed)); }
 
-// commands
+constexpr std::array<Command, 256> get_normal_map(){
+  auto aux = std::to_array<std::pair<K, Command>>({
+    {K::h, cursor_move_left},
+    {K::j, cursor_move_down},
+    {K::k, cursor_move_up},
+    {K::l, cursor_move_right},
 
-Editor to_mode(Editor ed, Mode m) {
-  ed.mode = m;
-  return ed;
+    {K::esc, to_insert_mode}
+  });
+  std::array<Command, 256> result{nullptr};
+
+  for(auto&& x: aux){
+    auto&& [idx, cmd] = x;
+    result[(unsigned char)idx] = cmd;
+  }
+
+  return result;
 }
 
-Editor adjust_offset(Editor ed) {
-  auto &off = ed.off;
-  auto &cur = ed.cur;
-
-  if (cur.y < off.y)
-    off.y = cur.y;
-  if (cur.x < off.x)
-    off.x = cur.x;
-  if (cur.y > off.y + ed.scr_size.y - 1)
-    off.y = cur.y - (ed.scr_size.y - 1);
-  if (cur.x > off.x + ed.scr_size.x - 1)
-    off.x = cur.x - (ed.scr_size.x - 1);
-
-  return ed;
-}
-
-Editor cursor_move(Editor ed, int dy, int dx) {
-  auto max_y = ed.buf.text.size();
-  if (max_y > 0)
-    max_y -= 1;
-  ed.cur.y =
-      add_within_range(ed.cur.y, 0ul, max_y, static_cast<size_t>(std::abs(dy)),
-                       dy >= 0 ? Sign::PLUS : Sign::MINUS);
-
-  auto max_x = ed.buf.text[ed.cur.y]
-                   .size(); // it is important to move up and down first, in
-                            // order to accurately compute this value
-  if (max_x > 0)
-    max_x -= 1;
-  ed.cur.x =
-      add_within_range(ed.cur.x, 0ul, max_x, static_cast<size_t>(std::abs(dx)),
-                       dx >= 0 ? Sign::PLUS : Sign::MINUS);
-
-  return adjust_offset(ed);
-}
-
-Editor resize(Editor ed) {
-  ed.scr_size = Terminal::size();
-  return adjust_offset(ed);
-}
-
-struct args {};
-// using editor_command = std::function<editor(editor, args)>;
-// using key_map = immer::map<wchar_t, editor_command>;
-using key_map = immer::map<std::wstring, std::wstring>;
-
-key_map normal_kmap{};
-key_map insert_kmap{};
 
 int run() {
   Terminal t{};
   Editor ed{};
   ed.scr_size = Terminal::size();
   ed.buf = buffer_from_file("src/editor.cc");
+  
+  auto normal_map = get_normal_map();
+
   while (true) {
     draw(ed);
-    wint_t ch = Terminal::get_char();
-    if (ch == 'q')
-      break;
-    switch (ch) {
-    case 'h':
-      ed = cursor_move(ed, 0, -1);
-      break;
-    case 'j':
-      // ed = cursor_move_down(ed);
-      ed = cursor_move(ed, 1, 0);
-      break;
-    case 'k':
-      ed = cursor_move(ed, -1, 0);
-      break;
-    case 'l':
-      ed = cursor_move(ed, 0, 1);
-      break;
-    case ':':
-      ed = to_mode(ed, Mode::INSERT);
-      break;
-    case 0632:
-      ed = resize(ed);
-      break;
+    Key ch = Terminal::get_char();
+    if(std::holds_alternative<K>(ch)){
+      auto k = std::get<K>(ch);
+      if(k==K::q)
+        break;
+      auto cmd = normal_map[(unsigned char)k];
+      if(cmd != nullptr)
+        ed = cmd(ed);
+    } else {
+      auto c = std::get<wint_t>(ch);
+      if(c==0632){
+        ed = resize(ed);
+      }
     }
   }
   return 0;
 }
-
-using Args = std::variant<std::monostate, int>;
-
-struct Command {
-  std::function<Editor(Editor, Args)> f;
-  Args args;
-};
-
-
 
 } // namespace nero

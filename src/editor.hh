@@ -7,7 +7,7 @@
 
 namespace nero {
 
-enum Mode {
+enum struct Mode {
   NORMAL,
   INSERT,
 };
@@ -32,9 +32,6 @@ EditorView view(Editor);
 void draw(Editor, Editor);
 
 void load_file(Editor, std::string file_name);
-
-Editor cursor_move(Editor, int dy, int dx);
-Editor resize(Editor);
 
 int run();
 } // namespace nero

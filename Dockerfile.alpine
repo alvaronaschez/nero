@@ -1,0 +1,8 @@
+FROM alpine:latest
+RUN apk update
+RUN apk add docs git
+RUN apk add gcc g++ gdb cmake make
+RUN apk add clang clang-extra-tools
+RUN apk add kakoune kakoune-lsp
+RUN apk add immer ncurses-dev ncurses-doc catch2-3
+COPY kakrc /root/.config/kak/

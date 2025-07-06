@@ -1,4 +1,4 @@
-SHELL := /usr/bin/bash
+#SHELL := /usr/bin/bash
 
 CXX=g++
 CC=cc
@@ -8,6 +8,7 @@ CC=cc
 MAKEFLAGS += --no-print-directory
 
 .PHONY: build start init run test clean destroy reset targets nix valgrind
+.PHONY: docker-build docker-run docker-start docker-exec
 
 build:
 	cmake --build build
@@ -30,7 +31,7 @@ clean:
 	cmake --build build --target clean
 
 destroy reset:
-	rm -rfd build
+	rm -rf build
 	if [ -f compile_commands.json ]; then \
 		rm compile_commands.json; \
 	fi
@@ -38,8 +39,24 @@ destroy reset:
 targets:
 	cmake --build build --target help
 
-nix:
-	nix-shell
+#nix:
+#	nix-shell
+
 
 valgrind:
 	@valgrind --leak-check=yes build/nero src/main.cc
+
+
+docker-build:
+	podman build --file Dockerfile.alpine --tag nero-alpine .
+docker-run:
+	podman run -it -v .:/root/nero -w /root/nero --name nero-alpine nero-alpine:latest sh
+docker-start:
+	podman start nero-alpine
+docker-exec:
+	podman exec -it nero-alpine sh
+
+# podman cp ~/df/home/dot-config/ nero-alpine:/root/
+# mv /root/dot-config /root/.config
+# podman cp ~/.ssh nero-alpine:/root/.ssh
+

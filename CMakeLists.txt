@@ -4,45 +4,51 @@ cmake_minimum_required(VERSION 3.15)
 project(nero VERSION 0.1 LANGUAGES CXX)
 
 #set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g") # debug info, no optimizations
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0") # debug info, no optimizations
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak,address,undefined")
 set(CMAKE_CXX_EXTENSIONS off)
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 #set(CMAKE_CURSES_NEED_WIDE true)
 find_package(Curses REQUIRED)
-find_package(Lua 5.4 REQUIRED)
+#find_package(Lua 5.4 REQUIRED)
 find_package(Immer)
 
 
-set(CMAKE_CONFIGURE_DEPENDS TRUE)
-set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-file(GLOB_RECURSE SOURCE_FILES
-    CONFIGURE_DEPENDS
-    "${SRC_DIR}/*.cc"
-    "${SRC_DIR}/*.hh"
-)
-
-list(REMOVE_ITEM SOURCE_FILES 
-  ${SRC_DIR}/main.cc
-  ${SRC_DIR}/util.cc
-)
-
-#set(SOURCE_FILES
-#	src/hi.cc
-#	src/hi.hh
-#	src/terminal.cc
-#	src/terminal.hh
-#	src/ncurses.hh
-# src/buffer.cc
-# src/buffer.hh
+#set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+#	"${SRC_DIR}/*.cc"
+#	"${SRC_DIR}/*.hh"
 #)
+#
+#file(GLOB_RECURSE SOURCE_FILES
+#	${SRC_DIR}/*.cc
+#	${SRC_DIR}/*.hh
+#)
+#
+#list(REMOVE_ITEM SOURCE_FILES ${SRC_DIR}/main.cc
+#${SRC_DIR}/app.cc)
+
+set(SOURCE_FILES
+	src/hi.cc
+	src/hi.hh
+
+	src/editor.cc
+	src/editor.hh
+	src/commands.cc
+	src/commands.hh
+	src/util.cc
+	src/util.hh
+	src/terminal.cc
+	src/terminal.hh
+	src/ncurses.hh
+	src/buffer.cc
+	src/buffer.hh
+)
 
 set(INCLUDE_DIRS
 	${LUA_INCLUDE_DIR}
