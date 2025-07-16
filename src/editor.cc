@@ -1,14 +1,13 @@
 #include "editor.hh"
 #include "buffer.hh"
-#include "common.hh"
-#include "terminal.hh"
 #include "commands.hh"
+#include "common.hh"
 #include "keys.hh"
+#include "terminal.hh"
 
 #include <immer/flex_vector_transient.hpp>
 #include <immer/map.hpp>
 #include <string>
-#include <variant>
 
 namespace nero {
 
@@ -39,49 +38,43 @@ void render(EditorView view) {
 
 void draw(Editor ed) { render(view(ed)); }
 
-constexpr std::array<Command, 256> get_normal_map(){
-  auto aux = std::to_array<std::pair<K, Command>>({
-    {K::h, cursor_move_left},
-    {K::j, cursor_move_down},
-    {K::k, cursor_move_up},
-    {K::l, cursor_move_right},
+constexpr std::array<Command, 256> get_normal_map() {
+  std::array<Command, 256> res{nullptr};
 
-    {K::esc, to_insert_mode}
-  });
-  std::array<Command, 256> result{nullptr};
+  using us = unsigned short;
 
-  for(auto&& x: aux){
-    auto&& [idx, cmd] = x;
-    result[(unsigned char)idx] = cmd;
-  }
+  res[(us)K::h] = cursor_move_left;
+  res[(us)K::j] = cursor_move_down;
+  res[(us)K::k] = cursor_move_up;
+  res[(us)K::l] = cursor_move_right;
 
-  return result;
+  res[(us)K::esc] = to_insert_mode;
+
+  return res;
 }
-
 
 int run() {
   Terminal t{};
   Editor ed{};
   ed.scr_size = Terminal::size();
   ed.buf = buffer_from_file("src/editor.cc");
-  
+
   auto normal_map = get_normal_map();
 
   while (true) {
     draw(ed);
-    Key ch = Terminal::get_char();
-    if(std::holds_alternative<K>(ch)){
-      auto k = std::get<K>(ch);
-      if(k==K::q)
+    Keystroke ks = Terminal::get_char();
+    if (ks.k) {
+      K k = *ks.k;
+      if (k == K::q)
         break;
       auto cmd = normal_map[(unsigned char)k];
-      if(cmd != nullptr)
+      if (cmd != nullptr)
         ed = cmd(ed);
+
     } else {
-      auto c = std::get<wint_t>(ch);
-      if(c==0632){
+      if (ks.keycode == 0632)
         ed = resize(ed);
-      }
     }
   }
   return 0;

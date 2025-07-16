@@ -1,7 +1,6 @@
 add-highlighter global/ number-lines -relative
 add-highlighter global/ number-lines
 
-
 # kak-lsp
 #if [ -x "$(command -v kak-lsp)" ]; then
   # enable kakoune lsp

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cwchar>
-#include <variant>
+#include <optional>
+
 namespace nero {
 enum struct K : unsigned char {
   // asci begin
@@ -265,7 +266,9 @@ enum struct K : unsigned char {
   // alt end
 };
 
+struct Keystroke {
+  wint_t keycode;
+  std::optional<K> k;
+};
 
-
-using Key = std::variant<wint_t, K>;
 } // namespace nero

@@ -43,7 +43,7 @@ void Terminal::refresh() { ncurses::refresh(); }
 
 void Terminal::clear() { ncurses::clear(); }
 
-Key Terminal::get_char() {
+Keystroke Terminal::get_char() {
   wint_t c;
   ncurses::wget_wch(ncurses::stdscr, &c);
 
@@ -54,20 +54,19 @@ Key Terminal::get_char() {
     int res = ncurses::wget_wch(ncurses::stdscr, &c);
     ncurses::nodelay(ncurses::stdscr, FALSE);
     if (res != ERR) {
-      if (c < 128)
-        return static_cast<K>(c + 128);
+      if (c < 128){
+        return {.keycode=c, .k=static_cast<K>(c + 128)};
+      }
     } else {
-      return K::esc;
+      return {.keycode=c, .k=K::esc};
     }
   }
 
   // not alt combo
   if (c < 128)
-    return static_cast<K>(c);
-  return c;
+    return {.keycode=c, .k=static_cast<K>(c)};
 
-  return c;
-  // return ncurses::wgetch(ncurses::stdscr);
+  return {.keycode=c, .k=std::nullopt};
 }
 
 Point Terminal::size() {

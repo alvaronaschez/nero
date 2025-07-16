@@ -12,7 +12,7 @@ public:
   ~Terminal();
 
   static void hide_cursor();
-  static Key get_char();
+  static Keystroke get_char();
   static void move(int y, int x);
   static void add(std::string);
   static void add(std::wstring);
